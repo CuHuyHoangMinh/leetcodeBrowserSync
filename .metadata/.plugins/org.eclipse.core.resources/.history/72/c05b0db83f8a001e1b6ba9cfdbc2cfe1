@@ -1,0 +1,21 @@
+package DAO;
+
+import java.util.List;
+
+import model.Submission;
+
+public class SubmissionDAOImp implements SubmissionDAO {
+
+	@Override
+	public List<Submission> getAllSubmission() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Submission getSubmissionbyID(Long id) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+}

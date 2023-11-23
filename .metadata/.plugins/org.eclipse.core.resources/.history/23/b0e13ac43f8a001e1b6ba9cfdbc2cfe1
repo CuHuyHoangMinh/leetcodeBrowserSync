@@ -1,0 +1,46 @@
+package DAO;
+
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import controller.controller;
+import controller.controller.singletonHelper;
+import model.Submission;
+import okhttp3.OkHttpClient;
+
+public class SubmissionDAOImp implements SubmissionDAO {
+	private static final int MAX_RETRIES = 10;
+
+	private static String leetcodeURL = "https://";
+	private static String leetcode = "leetcode.com";
+	private static String leetcodeSubmission = "/api/submissions/";
+
+	private static controller instance;
+	private OkHttpClient client;
+
+	private SubmissionDAOImp() {
+		client = new OkHttpClient.Builder().readTimeout(1000, TimeUnit.MILLISECONDS)
+				.writeTimeout(1000, TimeUnit.MILLISECONDS).build();
+	}
+
+	private static class singletonHelper {
+		private static final SubmissionDAOImp INSTANCE = new SubmissionDAOImp();
+	}
+
+	public static controller getInstance() {
+		return singletonHelper.INSTANCE;
+	}
+
+	@Override
+	public List<Submission> getAllSubmission() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Submission getSubmissionbyID(Long id) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+}

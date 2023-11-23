@@ -1,0 +1,117 @@
+package minh.leetcodesync.controller;
+
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+
+import org.json.*;
+
+import io.github.cdimascio.dotenv.Dotenv;
+import okhttp3.HttpUrl;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+
+public class controller {
+	private static final int MAX_RETRIES = 10;
+
+	private static String leetcodeURL = "https://";
+	private static String leetcode = "leetcode.com";
+	private static String leetcodeSubmission = "/api/submissions/";
+
+	private static controller instance;
+	private OkHttpClient client;
+
+	private controller() {
+		client = new OkHttpClient.Builder().readTimeout(1000, TimeUnit.MILLISECONDS)
+				.writeTimeout(1000, TimeUnit.MILLISECONDS).build();
+	}
+
+	private static class singletonHelper {
+		private static final controller INSTANCE = new controller();
+	}
+
+	public static controller getInstance() {
+		return singletonHelper.INSTANCE;
+	}
+
+	public void downloadAll() {
+		MediaType mediaType = MediaType.parse("application/json");
+		Dotenv dotenv = Dotenv.configure().directory("./").ignoreIfMalformed().ignoreIfMissing().load();
+
+		String csrtf = dotenv.get("leetcodecsrftoken");
+		String session = dotenv.get("leetcodesession");
+
+		if (csrtf == null) {
+			System.out.println("Add CSRTF token");
+			throw new NullPointerException();
+		}
+		if (session == null) {
+			System.out.println("Add session token");
+			throw new NullPointerException();
+		}
+		try {
+			int offset = 0;
+			int limit = 20;
+			String lastKey = "";
+			int retries = 0;
+			Response response;
+			JSONObject jsonObject = null;
+			String responseString = "";
+			JSONObject cur = null;
+			do {
+				HttpUrl.Builder urlBuilder = HttpUrl.parse(leetcodeURL + leetcode + leetcodeSubmission).newBuilder();
+				urlBuilder.addQueryParameter("offset", "" + offset);
+				urlBuilder.addQueryParameter("limit", "" + limit);
+				urlBuilder.addQueryParameter("lastkey", "" + lastKey);
+
+				Request request = new Request.Builder().url(urlBuilder.build())
+						.header("X-Requested-With", "XMLHttpRequest").header("X-CSRFToken", csrtf)
+						.header("Cookie", "csrftoken=" + csrtf + ";LEETCODE_SESSION=" + session)
+
+						.build();
+
+				response = client.newCall(request).execute();
+				if (response == null) {
+					retries++;
+					continue;
+				}
+				
+			    responseString = response.body().string();
+				cur = new JSONObject(responseString);
+
+				if (jsonObject == null)
+					jsonObject = new JSONObject(responseString);
+				else {
+					JSONObject merged = new JSONObject(jsonObject, JSONObject.getNames(jsonObject));
+					for (String key : JSONObject.getNames(cur)) {
+						merged.put(key, cur.get(key));
+					}
+
+				}
+				offset += 20;
+				lastKey = cur.getString("last_key");
+				TimeUnit.SECONDS.sleep(10);
+				System.out.println(jsonObject.toString());
+				System.out.println(response.message());
+			} while (cur.getBoolean("has_next") && retries < MAX_RETRIES);
+			try {
+		         FileWriter file = new FileWriter("./output.json");
+		         file.write(jsonObject.toString());
+		         file.close();
+		      } catch (IOException e) {
+		         // TODO Auto-generated catch block
+		         e.printStackTrace();
+		      }
+//			return jsonObject;
+		} catch (IOException | JSONException ex) {
+			System.out.println(ex.getMessage());
+//			return null;
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+}

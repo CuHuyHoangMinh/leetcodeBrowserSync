@@ -1,0 +1,18 @@
+package model;
+
+public class submission {
+	private Long id;
+	private String lang;
+	private String lang_name;
+	private String time;
+	private int status;
+	private String status_display;
+	private String runtime;
+	private String url;
+	private String is_pending;
+	private String title;
+	private String memory;
+	private String code;
+	
+
+}
