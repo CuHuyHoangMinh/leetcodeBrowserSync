@@ -131,6 +131,7 @@ public class SubmissionDAOImp implements SubmissionDAO {
 		         FileWriter file = new FileWriter("./output.json");
 		         for (Submission s:submissions) {
 		        	 file.write(s.toString());
+		        	 
 		         }
 		         file.close();
 		      } catch (IOException e) {

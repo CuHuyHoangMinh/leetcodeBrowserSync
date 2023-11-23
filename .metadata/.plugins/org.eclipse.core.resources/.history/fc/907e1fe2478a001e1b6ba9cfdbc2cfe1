@@ -1,0 +1,150 @@
+package DAO;
+
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import io.github.cdimascio.dotenv.Dotenv;
+import model.Submission;
+import okhttp3.HttpUrl;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+
+public class SubmissionDAOImp implements SubmissionDAO {
+	private static final int MAX_RETRIES = 10;
+	private static final int SLEEP_TIME = 10;
+
+	private static String leetcodeURL = "https://";
+	private static String leetcode = "leetcode.com";
+	private static String leetcodeSubmission = "/api/submissions/";
+
+	private static SubmissionDAOImp instance;
+	private OkHttpClient client;
+	
+	private List<Submission> submissions = new ArrayList<>();
+	private Map<Long, Submission> submissionsMap = new HashMap<>();
+
+	private SubmissionDAOImp() {
+		client = new OkHttpClient.Builder().readTimeout(1000, TimeUnit.MILLISECONDS)
+				.writeTimeout(1000, TimeUnit.MILLISECONDS).build();
+	}
+
+	private static class singletonHelper {
+		private static final SubmissionDAOImp INSTANCE = new SubmissionDAOImp();
+	}
+
+	public static SubmissionDAOImp getInstance() {
+		return singletonHelper.INSTANCE;
+	}
+
+	@Override
+	public List<Submission> getAllSubmission() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Submission getSubmissionbyID(Long id) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	public Request buildRequest(int offset, int limit, String lastKey) {
+		Dotenv dotenv = Dotenv.configure().directory("./").ignoreIfMalformed().ignoreIfMissing().load();
+
+		String csrtf = dotenv.get("leetcodecsrftoken");
+		String session = dotenv.get("leetcodesession");
+
+		if (csrtf == null) {
+			System.out.println("Add CSRTF token");
+			throw new NullPointerException();
+		}
+		if (session == null) {
+			System.out.println("Add session token");
+			throw new NullPointerException();
+		}
+		HttpUrl.Builder urlBuilder = HttpUrl.parse(leetcodeURL + leetcode + leetcodeSubmission).newBuilder();
+		urlBuilder.addQueryParameter("offset", "" + offset);
+		urlBuilder.addQueryParameter("limit", "" + limit);
+		urlBuilder.addQueryParameter("lastkey", "" + lastKey);
+
+		Request request = new Request.Builder().url(urlBuilder.build())
+				.header("X-Requested-With", "XMLHttpRequest").header("X-CSRFToken", csrtf)
+				.header("Cookie", "csrftoken=" + csrtf + ";LEETCODE_SESSION=" + session)
+
+				.build();
+	return request;
+	}
+	
+	public void downloadAllSubmission() {
+		
+		
+		try {
+			int offset = 0;
+			int limit = 20;
+			String lastKey = "";
+			int retries = 0;
+			Response response;
+			JSONObject jsonObject = null;
+			String responseString = "";
+			JSONObject cur = null;
+			do {
+				
+				Request request = buildRequest(offset,limit,lastKey);
+
+				response = client.newCall(request).execute();
+				if (response == null) {
+					retries++;
+					continue;
+				}
+				
+			    responseString = response.body().string();
+			    
+				cur = new JSONObject(responseString);
+				JSONArray submissions_dump = cur.getJSONArray("submissions_dump");
+				
+				for (int i = 0; i<submissions_dump.length();i++) {
+					JSONObject sub = submissions_dump.getJSONObject(i);
+					if (!submissionsMap.keySet().contains(sub.getLong("id"))) {
+						Submission s = new Submission(sub);
+						submissionsMap.put(sub.getLong("id"),s);
+						submissions.add(s);
+					}
+				}
+				
+				offset += 20;
+				lastKey = cur.getString("last_key");
+				TimeUnit.SECONDS.sleep(SLEEP_TIME);
+				System.out.println(cur.toString());
+			} while (cur.getBoolean("has_next") && retries < MAX_RETRIES);
+			try {
+		         FileWriter file = new FileWriter("./output.json");
+		         for (Submission s:submissions) {
+		        	 file.write(s.toString());
+		         }
+		         file.close();
+		      } catch (IOException e) {
+		         // TODO Auto-generated catch block
+		         e.printStackTrace();
+		      }
+//			return jsonObject;
+		} catch (IOException | JSONException ex) {
+			System.out.println(ex.getMessage());
+//			return null;
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+}
