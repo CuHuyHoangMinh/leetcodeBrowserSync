@@ -23,20 +23,28 @@ import okhttp3.Response;
 public class SubmissionDAOImp implements SubmissionDAO {
 	private static final int MAX_RETRIES = 10;
 	private static final int SLEEP_TIME = 10;
+	private static final int ACCEPTED = 10;
 
 	private static String leetcodeURL = "https://";
 	private static String leetcode = "leetcode.com";
 	private static String leetcodeSubmission = "/api/submissions/";
+	private static String CSRTF;
+	private static String SESSION;
 
 	private static SubmissionDAOImp instance;
 	private OkHttpClient client;
-	
+
 	private List<Submission> submissions = new ArrayList<>();
 	private Map<Long, Submission> submissionsMap = new HashMap<>();
 
 	private SubmissionDAOImp() {
 		client = new OkHttpClient.Builder().readTimeout(1000, TimeUnit.MILLISECONDS)
 				.writeTimeout(1000, TimeUnit.MILLISECONDS).build();
+		Dotenv dotenv = Dotenv.configure().directory("./").ignoreIfMalformed().ignoreIfMissing().load();
+
+		CSRTF = dotenv.get("leetcodecsrftoken");
+		SESSION = dotenv.get("leetcodesession");
+
 	}
 
 	private static class singletonHelper {
@@ -49,27 +57,23 @@ public class SubmissionDAOImp implements SubmissionDAO {
 
 	@Override
 	public List<Submission> getAllSubmission() {
-		// TODO Auto-generated method stub
-		return null;
+		// compare and check so no double download, todo later
+
+		return downloadAllSubmission(ACCEPTED);
 	}
 
 	@Override
 	public Submission getSubmissionbyID(Long id) {
-		// TODO Auto-generated method stub
-		return null;
+		return submissionsMap.get(id);
 	}
-	
+
 	public Request buildRequest(int offset, int limit, String lastKey) {
-		Dotenv dotenv = Dotenv.configure().directory("./").ignoreIfMalformed().ignoreIfMissing().load();
 
-		String csrtf = dotenv.get("leetcodecsrftoken");
-		String session = dotenv.get("leetcodesession");
-
-		if (csrtf == null) {
+		if (CSRTF == null) {
 			System.out.println("Add CSRTF token");
 			throw new NullPointerException();
 		}
-		if (session == null) {
+		if (SESSION == null) {
 			System.out.println("Add session token");
 			throw new NullPointerException();
 		}
@@ -78,17 +82,15 @@ public class SubmissionDAOImp implements SubmissionDAO {
 		urlBuilder.addQueryParameter("limit", "" + limit);
 		urlBuilder.addQueryParameter("lastkey", "" + lastKey);
 
-		Request request = new Request.Builder().url(urlBuilder.build())
-				.header("X-Requested-With", "XMLHttpRequest").header("X-CSRFToken", csrtf)
-				.header("Cookie", "csrftoken=" + csrtf + ";LEETCODE_SESSION=" + session)
+		Request request = new Request.Builder().url(urlBuilder.build()).header("X-Requested-With", "XMLHttpRequest")
+				.header("X-CSRFToken", CSRTF).header("Cookie", "csrftoken=" + CSRTF + ";LEETCODE_SESSION=" + SESSION)
 
 				.build();
-	return request;
+		return request;
 	}
-	
-	public void downloadAllSubmission() {
-		
-		
+
+	public List<Submission> downloadAllSubmission(int status) {
+
 		try {
 			int offset = 0;
 			int limit = 20;
@@ -99,46 +101,40 @@ public class SubmissionDAOImp implements SubmissionDAO {
 			String responseString = "";
 			JSONObject cur = null;
 			do {
-				
-				Request request = buildRequest(offset,limit,lastKey);
+
+				Request request = buildRequest(offset, limit, lastKey);
 
 				response = client.newCall(request).execute();
 				if (response == null) {
 					retries++;
 					continue;
 				}
-				
-			    responseString = response.body().string();
-			    
+				responseString = response.body().string();
+
 				cur = new JSONObject(responseString);
 				JSONArray submissions_dump = cur.getJSONArray("submissions_dump");
-				
-				for (int i = 0; i<submissions_dump.length();i++) {
+
+				for (int i = 0; i < submissions_dump.length(); i++) {
 					JSONObject sub = submissions_dump.getJSONObject(i);
+					if (sub.getInt("status") != status)
+						continue;
 					if (!submissionsMap.keySet().contains(sub.getLong("id"))) {
 						Submission s = new Submission(sub);
-						submissionsMap.put(sub.getLong("id"),s);
+						submissionsMap.put(sub.getLong("id"), s);
 						submissions.add(s);
 					}
 				}
-				
+
 				offset += 20;
 				lastKey = cur.getString("last_key");
 				TimeUnit.SECONDS.sleep(SLEEP_TIME);
 				System.out.println(cur.toString());
 			} while (cur.getBoolean("has_next") && retries < MAX_RETRIES);
-			try {
-		         FileWriter file = new FileWriter("./output.json");
-		         for (Submission s:submissions) {
-		        	 file.write(s.toString());
-		        	 
-		         }
-		         file.close();
-		      } catch (IOException e) {
-		         // TODO Auto-generated catch block
-		         e.printStackTrace();
-		      }
-//			return jsonObject;
+			for (int i = 0; i < 5; i++) {
+				createFile(submissions.get(i));
+			}
+
+			return submissions;
 		} catch (IOException | JSONException ex) {
 			System.out.println(ex.getMessage());
 //			return null;
@@ -146,6 +142,25 @@ public class SubmissionDAOImp implements SubmissionDAO {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		return null;
+	}
+
+	public void createFile(Submission s) throws IOException {
+		FileWriter file = new FileWriter("./" + s.getId() + s.getExt());
+		file.write(s.getCode());
+		file.close();
+	}
+
+	@Override
+	public SubmissionDAO initAll() {
+		this.downloadAllSubmission(ACCEPTED);
+		return this;
+	}
+
+	@Override
+	public Map<Long, Submission> getSubmissionMap() {
+		// TODO Auto-generated method stub
+		return this.submissionsMap;
 	}
 
 }

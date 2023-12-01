@@ -1,0 +1,102 @@
+package controller;
+
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+
+import org.json.*;
+
+
+import io.github.cdimascio.dotenv.Dotenv;
+import okhttp3.HttpUrl;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+
+public class GitController {
+
+	private static final String GIT_URL = "api.github.com";
+	private static final String PROTOCOL = "HTTPS";
+	
+	
+	private OkHttpClient client;
+
+	
+	private GitController() {
+		client = new OkHttpClient.Builder().readTimeout(1000, TimeUnit.MILLISECONDS)
+				.writeTimeout(1000, TimeUnit.MILLISECONDS).build();
+	}
+	
+	private static class singletonHelper {
+		private static final GitController INSTANCE = new GitController();
+	}
+
+	public static GitController getInstance() {
+		return singletonHelper.INSTANCE;
+	}
+	
+	// FINAL String make for different api
+	public Request buildRequest(String type) {
+		Dotenv dotenv = Dotenv.configure().directory("./").ignoreIfMalformed().ignoreIfMissing().load();
+
+		String gitToken = dotenv.get("gitToken");
+		HttpUrl url = new HttpUrl.Builder()
+				.scheme("https")
+				.host(GIT_URL)
+				.addPathSegment("repos")
+				.addPathSegment(dotenv.get("gitUser"))
+				.addPathSegment(dotenv.get("gitRepo"))
+				.build();
+		System.out.println(url.toString());
+		Request req = new Request.Builder()
+				.url(url)
+				.header("Authorization", dotenv.get("gitToken"))
+				.build();
+		return req;
+	}
+	
+	
+	public boolean repoExist() {
+		
+		return false;
+	}
+	
+	public void connectGit() throws JSONException {
+		Dotenv dotenv = Dotenv.configure().directory("./").ignoreIfMalformed().ignoreIfMissing().load();
+
+		String gitToken = dotenv.get("gitToken");
+		HttpUrl url = new HttpUrl.Builder()
+				.scheme("https")
+				.host(GIT_URL)
+				.addPathSegments("user/repos")
+//				.addPathSegment(dotenv.get("gitUser"))
+//				.addPathSegment(dotenv.get("gitRepo")+"1")
+				.build();
+		System.out.println(url.toString());
+		JSONObject json = new JSONObject();
+		
+		json.put("name", "minhTest");
+		json.put("description", "minh test github api");
+		json.put("homepage", "https://github.com");
+		
+		System.out.println(json.toString());
+		RequestBody body = RequestBody.create(MediaType.parse("application/json"),json.toString() );
+		Request req = new Request.Builder()
+				.url(url)
+				.header("Authorization", dotenv.get("gitToken"))
+				.post(body)
+				.build();
+		
+		try {
+			Response response = client.newCall(req).execute();
+			System.out.println(response.body().string());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+
+}

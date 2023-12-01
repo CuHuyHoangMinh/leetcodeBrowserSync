@@ -1,0 +1,34 @@
+package controller;
+
+import java.io.IOException;
+
+import org.json.JSONException;
+
+import DAO.SubmissionDAO;
+import DAO.SubmissionDAOImp;
+
+public class leetcodeSyncCommand {
+
+	private static SubmissionDAO submissionDao = SubmissionDAOImp.getInstance();
+	private static GitController gitController = GitController.getInstance();
+	
+	public static boolean checkRepoExist() {
+		return gitController.repoExist()
+	}
+	
+	public static void syncLeetCode() {
+		try {
+			boolean repoExist = gitController.repoExist();
+			if (!repoExist) {
+				
+			}
+			
+		} catch (IOException | JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	
+	
+}

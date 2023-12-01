@@ -1,0 +1,35 @@
+package controller;
+
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+
+import org.json.*;
+
+import io.github.cdimascio.dotenv.Dotenv;
+import okhttp3.HttpUrl;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+
+public class GitController {
+
+	private static final String GIT_URL = "https://api.github.com/";
+
+	public void connectGit() {
+		Dotenv dotenv = Dotenv.configure().directory("./").ignoreIfMalformed().ignoreIfMissing().load();
+
+		String gitToken = dotenv.get("gitToken");
+		HttpUrl urlBuilder = new HttpUrl.Builder()
+				.scheme("https")
+				.host(GIT_URL)
+				.addPathSegment("repos")
+				.addPathSegment(dotenv.get("git_user"))
+				.build();
+
+//		Request req = new Request.Builder().pu
+
+	}
+
+}

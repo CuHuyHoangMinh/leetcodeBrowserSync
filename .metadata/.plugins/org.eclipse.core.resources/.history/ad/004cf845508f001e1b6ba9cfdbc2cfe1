@@ -1,0 +1,192 @@
+package controller;
+
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import org.json.*;
+
+import io.github.cdimascio.dotenv.Dotenv;
+import okhttp3.Headers;
+import okhttp3.HttpUrl;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+
+public class GitController {
+
+	private static final String GIT_URL = "api.github.com";
+	private static final String PROTOCOL = "HTTPS";
+
+	private static String GIT_TOKEN;
+	private static String GIT_USER;
+	private static String GIT_REPO;
+
+	private static Headers HEADER;
+
+	private OkHttpClient client;
+	private JSONObject output;
+	private List<JSONObject> history = new LinkedList<>();
+
+	private GitController() {
+		client = new OkHttpClient.Builder().readTimeout(1000, TimeUnit.MILLISECONDS)
+				.writeTimeout(1000, TimeUnit.MILLISECONDS).build();
+		Dotenv dotenv = Dotenv.configure() //
+				.directory("./") //
+				.ignoreIfMalformed() //
+				.ignoreIfMissing() //
+				.load();
+		GIT_TOKEN = dotenv.get("gitToken");
+		GIT_USER = dotenv.get("gitUser");
+		GIT_REPO = dotenv.get("gitRepo");
+		HEADER = new Headers.Builder().add("Authorization", GIT_TOKEN).build();
+
+	}
+
+	private static class singletonHelper {
+		private static final GitController INSTANCE = new GitController();
+	}
+
+	public static GitController getInstance() {
+		return singletonHelper.INSTANCE;
+	}
+
+	// FINAL String make for different api
+//	public Request buildRequest(String type) {
+//
+//		String gitToken = dotenv.get("gitToken");
+//		HttpUrl url = new HttpUrl.Builder() //
+//				.scheme("https") //
+//				.host(GIT_URL) //
+//				.addPathSegment("repos") //
+//				.addPathSegment(dotenv.get("gitUser")) //
+//				.addPathSegment(dotenv.get("gitRepo")) //
+//				.build();
+//		System.out.println(url.toString());
+//		Request req = new Request.Builder().url(url).header("Authorization", dotenv.get("gitToken")).build();
+//		return req;
+//	}
+
+	public boolean repoExist() throws IOException, JSONException {
+		HttpUrl url = new HttpUrl.Builder() //
+				.scheme(PROTOCOL) //
+				.host(GIT_URL) //
+				.addPathSegment("repos") //
+				.addPathSegment(GIT_USER) //
+				.addPathSegment(GIT_REPO) //
+				.build();
+		Request request = new Request.Builder() //
+				.url(url) //
+				.headers(HEADER) //
+				.build();
+
+		Response response = client.newCall(request).execute();
+//		if (response == null) {
+//			System.out.println("error connecting to git");
+//			throws 
+//		}
+		String responseString = response.body().string();
+		output = new JSONObject(responseString);
+		System.out.println(output.toString(2));
+
+		history.add(output);
+		if (output.has("id"))
+			return true;
+		return false;
+	}
+
+	public boolean createRepo() throws IOException, JSONException {
+		JSONObject jsonRequestBody = new JSONObject();
+		jsonRequestBody.put("name", GIT_REPO);
+		jsonRequestBody.put("description", "Leetcode Submissions");
+		jsonRequestBody.put("homepage", "https://github.com");
+
+		HttpUrl url = new HttpUrl.Builder() //
+				.scheme("https").host(GIT_URL) //
+				.addPathSegments("user/repos") //
+				.build();
+		RequestBody body = RequestBody.create(jsonRequestBody.toString(), MediaType.parse("application/json"));
+		Request request = new Request.Builder() //
+				.url(url) //
+				.headers(HEADER) //
+				.post(body) //
+				.build();
+		Response response = client.newCall(request).execute();
+		String responseString = response.body().string();
+		output = new JSONObject(responseString);
+		history.add(output);
+		System.out.println(output.toString(2));
+
+		// automaticly add README file or not
+		if (output.has("id"))
+			return true;
+		return false;
+	}
+
+	public boolean addReadMe() {
+		// add readme content
+		String readme = "";
+		return addFiles("README.md", readme);
+	}
+
+	public boolean fileExistsInRepos(String path) throws IOException, JSONException {
+		HttpUrl url = new HttpUrl.Builder() //
+				.scheme(PROTOCOL) //
+				.host(GIT_URL) //
+				.addPathSegment("repos") //
+				.addPathSegment(GIT_USER) //
+				.addPathSegment(GIT_REPO) //
+				.addPathSegment("contents") //
+				.addPathSegments(path).build();
+		Request request = new Request.Builder() //
+				.url(url) //
+				.headers(HEADER) //
+				.build();
+
+		Response response = client.newCall(request).execute();
+
+		String responseString = response.body().string();
+		output = new JSONObject(responseString);
+		System.out.println(output.toString(2));
+
+		history.add(output);
+		if (output.has("sha"))
+			return true;
+		return false;
+	}
+
+	public boolean addFiles(String path, String fileContent) throws IOException, JSONException {
+		HttpUrl url = new HttpUrl.Builder() //
+				.scheme(PROTOCOL) //
+				.host(GIT_URL) //
+				.addPathSegment("repos") //
+				.addPathSegment(GIT_USER) //
+				.addPathSegment(GIT_REPO) //
+				.addPathSegment("contents") //
+				.addPathSegments(path).build();
+		Request request = new Request.Builder() //
+				.url(url) //
+				.headers(HEADER) //
+				.build();
+
+		Response response = client.newCall(request).execute();
+
+		String responseString = response.body().string();
+		output = new JSONObject(responseString);
+		System.out.println(output.toString(2));
+
+		history.add(output);
+		if (output.has("sha"))
+			return true;
+		return false;
+	}
+
+	public JSONObject getOutput() {
+		return output;
+	}
+
+}

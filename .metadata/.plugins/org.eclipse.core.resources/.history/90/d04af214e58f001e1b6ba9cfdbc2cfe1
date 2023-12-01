@@ -1,0 +1,40 @@
+package controller;
+
+import java.io.IOException;
+import java.util.Map;
+
+import org.json.JSONException;
+
+import DAO.SubmissionDAO;
+import DAO.SubmissionDAOImp;
+import model.Submission;
+
+public class leetcodeSyncCommand {
+
+	private static SubmissionDAO submissionDao = SubmissionDAOImp.getInstance();
+	private static GitController gitController = GitController.getInstance();
+	
+	public static boolean checkRepoExist() throws IOException, JSONException {
+		
+		return gitController.repoExist();
+	}
+	
+	public static boolean createRepo() throws IOException, JSONException {
+		return gitController.createRepo();
+
+	}
+		
+	public static void syncLeetCode() {
+		try {
+			submissionDao.initAll();
+			Map<Long, Submission> submissionDao.getSubmissionMap();
+			
+		} catch (IOException | JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	
+	
+}

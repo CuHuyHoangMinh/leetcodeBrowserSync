@@ -12,9 +12,13 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 import org.json.*;
+//import org.kohsuke.github.GHRepository;
+//import org.kohsuke.github.GitHub;
+//import org.kohsuke.github.GitHubBuilder;
 
 import DAO.SubmissionDAOImp;
-import controller.controller;
+import controller.GitController;
+import controller.LeetcodeSyncCommand;
 import io.github.cdimascio.dotenv.Dotenv;
 
 /**
@@ -22,68 +26,80 @@ import io.github.cdimascio.dotenv.Dotenv;
  *
  */
 public class App {
-	public static void main(String[] args) {
-		System.out.println("Hello World!");
-		SubmissionDAOImp s = SubmissionDAOImp.getInstance();
-		s.downloadAllSubmission();
+	public static void main(String[] args)
+			throws IOException, JSONException {
+		LeetcodeSyncCommand.syncLeetCode();
+//		System.out.println(git.addFiles("test/abcddd.txt","something","test git put"));
+//		SubmissionDAOImp s = SubmissionDAOImp.getInstance();
+//		s.downloadAllSubmission(10);
+//		connectGit();
 	}
 
-	public static void invoke() throws URISyntaxException, IOException {
-		OkHttpClient client = new OkHttpClient.Builder().readTimeout(1000, TimeUnit.MILLISECONDS)
-				.writeTimeout(1000, TimeUnit.MILLISECONDS).build();
-		String username = "CuHuyHoangMinh";
-		MediaType mediaType = MediaType.parse("application/json");
-		String query = String.format(
-				"{\"query\":\"query  getUserProfile($username: String!) { allQuestionsCount { difficulty count } matchedUser(username: $username) { contributions { points } profile { reputation ranking } submissionCalendar submitStats { acSubmissionNum { difficulty count submissions } totalSubmissionNum { difficulty count submissions } } } } \",\"variables\":{\"username\":\"%s\"}}",
-				username);
-		RequestBody body = RequestBody.create(query, mediaType);
-		Request request = new Request.Builder().url("https://leetcode.com/graphql/").post(body).build();
-//		System.out.println(query);
-		try {
-			Response response = client.newCall(request).execute();
-			String responseString = response.body().string();
-			JSONObject jsonObject = new JSONObject(responseString);
-			System.out.println(jsonObject.toString());
-			System.out.println(response.message());
-			
-		} catch (IOException | JSONException ex) {
-			System.out.println(ex.getMessage());
-			return;
-		}
-	}
+//	public static void connectGit() throws InvalidRemoteException, TransportException, GitAPIException, IOException {
+//		File f = new File("./github");
+//		if (f.exists()) {
+//			deleteDir(f);
+//		}
+//		TextProgressMonitor consoleProgressMonitor = new TextProgressMonitor(new PrintWriter(System.out));
+//		SshSessionFactory sshSessionFactory = new JschConfigSessionFactory() {
+//
+//			@Override
+//			protected void configure(Host hc, Session session) {
+//				// TODO Auto-generated method stub
+//	            session.setConfig("StrictHostKeyChecking", "no");
+//
+//			}
+//			@Override
+//	        protected JSch createDefaultJSch(FS fs) throws JSchException  {
+//	            JSch jSch = super.createDefaultJSch(fs);
+//	            jSch.addIdentity("/path/to/key", "super-secret-passphrase".getBytes());
+//	            return jSch;
+//	        }
+//
+//		};
+//		CredentialsProvider c = new UsernamePasswordCredentialsProvider("CuHuyHoangMinh","dragonMINH1998");
+//
+//		Git git = Git.cloneRepository().setProgressMonitor(consoleProgressMonitor).setDirectory(f)
+//				.setURI("https://github.com/CuHuyHoangMinh/leetcodePractice.git")
+//				.setTransportConfigCallback(new TransportConfigCallback() {
+//
+//					@Override
+//					public void configure(Transport transport) {
+//						// TODO Auto-generated method stub
+//						SshTransport sshTransport = (SshTransport) transport;
+//						sshTransport.setSshSessionFactory(sshSessionFactory);
+//					}
+//					
+//					
+//
+//				}).call();
+//		Repository repo = git.getRepository();
+//		FileWriter test = new FileWriter("./github/test.txt");
+//		test.write("something");
+//		test.close();
+//		AddCommand add = git.add();
+//
+//		add.addFilepattern("/github/test.txt").call();
+//		git.commit().setMessage("test git").call();
+//		git.push().call();
+//
+//	}
 	
-	public static void downloadSubmission() throws URISyntaxException, IOException  {
-		OkHttpClient client = new OkHttpClient.Builder().readTimeout(1000, TimeUnit.MILLISECONDS)
-				.writeTimeout(1000, TimeUnit.MILLISECONDS).build();
-		MediaType mediaType = MediaType.parse("application/json");
-		Dotenv dotenv = Dotenv.configure()
-				.directory("./")
-				.ignoreIfMalformed()
-		        .ignoreIfMissing()
-		        .load();
-						
-		String csrtf = dotenv.get("leetcodecsrftoken");
-		String session = dotenv.get("leetcodesession");
-		
-		Request request = new Request.Builder().url("https://leetcode.com/api/submissions/")
-												.header("X-Requested-With", "XMLHttpRequest")
-												.header("X-CSRFToken", csrtf )
-												.header("Cookie", "csrftoken="+csrtf+";LEETCODE_SESSION="+session)
-												.build();
-		
-		try {
-			Response response = client.newCall(request).execute();
-			String responseString = response.body().string();
-			JSONObject jsonObject = new JSONObject(responseString);
-			System.out.println(jsonObject.toString());
-			System.out.println(response.message());
-		}catch (IOException | JSONException ex) {
-			System.out.println(ex.getMessage());
-			return;
+//	public static void connectGit() throws IOException {
+//		GitHub github = new GitHubBuilder().withOAuthToken("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").build();
+//		GHRepository repo = github.createRepository("https://github.com/CuHuyHoangMinh/leetcodePractice.git")
+//								.downloads(true).;
+//		github.checkApiUrlValidity();
+//	}
+
+	public static boolean deleteDir(File f) {
+		File[] allFiles = f.listFiles();
+		if (allFiles != null) {
+			for (File fi : allFiles) {
+				deleteDir(fi);
+			}
 		}
-		
-
-		
+		return f.delete();
 	}
-}
 
+}

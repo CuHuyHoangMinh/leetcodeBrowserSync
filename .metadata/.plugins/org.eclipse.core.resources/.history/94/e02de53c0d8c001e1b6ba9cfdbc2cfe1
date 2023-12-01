@@ -1,0 +1,44 @@
+package minh.leetcodesync;
+
+import java.io.*;
+import java.net.URISyntaxException;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.lib.TextProgressMonitor;
+import org.json.*;
+
+import DAO.SubmissionDAOImp;
+import controller.controller;
+import io.github.cdimascio.dotenv.Dotenv;
+
+/**
+ * Hello world!
+ *
+ */
+public class App {
+	public static void main(String[] args) {
+		System.out.println("Hello World!");
+		SubmissionDAOImp s = SubmissionDAOImp.getInstance();
+		s.downloadAllSubmission(10);
+	}
+	
+	public static void connectGit() {
+		File f = new File("./github");
+		if(!f.exists()) {
+			f.mkdir();
+		}
+		TextProgressMonitor consoleProgressMonitor = new TextProgressMonitor(new PrintWriter(System.out));
+		Repository repo = Git.cloneRepository().setProgressMonitor(consoleProgressMonitor).setDirectory(f)
+				.setURI("https://github.com/Ravikharatmal/test.git").call().getRepository();
+	}
+
+}
+

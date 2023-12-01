@@ -1,0 +1,59 @@
+package minh.leetcodesync;
+
+import java.io.*;
+import java.net.URISyntaxException;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.InvalidRemoteException;
+import org.eclipse.jgit.api.errors.TransportException;
+import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.lib.TextProgressMonitor;
+import org.json.*;
+
+import DAO.SubmissionDAOImp;
+import controller.controller;
+import io.github.cdimascio.dotenv.Dotenv;
+
+/**
+ * Hello world!
+ *
+ */
+public class App {
+	public static void main(String[] args) throws InvalidRemoteException, TransportException, GitAPIException {
+		System.out.println("Hello World!");
+//		SubmissionDAOImp s = SubmissionDAOImp.getInstance();
+//		s.downloadAllSubmission(10);
+		connectGit();
+	}
+	
+	public static void connectGit() throws InvalidRemoteException, TransportException, GitAPIException {
+		File f = new File("./github");
+		if(f.exists()) {
+			f.de;
+		}
+		TextProgressMonitor consoleProgressMonitor = new TextProgressMonitor(new PrintWriter(System.out));
+		Repository repo = Git.cloneRepository().setProgressMonitor(consoleProgressMonitor).setDirectory(f)
+				.setURI("https://github.com/CuHuyHoangMinh/leetcodePractice.git").call().getRepository();
+	}
+	
+	public static boolean deleteDir(File f) {
+		File [] allFiles = f.listFiles();
+		if (allFiles!=null) {
+			for (File fi: allFiles) {
+				deleteDir(fi);
+			}
+		}
+		return f.delete();
+	}
+
+}
+

@@ -1,0 +1,9 @@
+package controller;
+
+import DAO.SubmissionDAOImp;
+
+public class leetcodeSync {
+
+	SubmissionDAO submissionDao = SubmissionDAOImp.getInstance();
+	
+}

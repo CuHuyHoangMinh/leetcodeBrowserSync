@@ -17,6 +17,7 @@ public class Submission {
 	private String title;
 	private String memory;
 	private String code;
+	private String ext;
 
 	public Submission(Long id, String lang, String lang_name, String time, int status, String status_display,
 			String runtime, String url, String is_pending, String title, String memory, String code) throws JSONException {
@@ -170,6 +171,16 @@ public class Submission {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		return "";
+	}
+	//fill this later
+	public String getExt() {
+		if (lang.equals("java"))
+			return ".java";
+		if (lang.equals("python"))
+			return ".py";
+		if (lang.equals("C"))
+			return ".c";
 		return "";
 	}
 

@@ -1,0 +1,13 @@
+package controller;
+
+import DAO.SubmissionDAO;
+import DAO.SubmissionDAOImp;
+
+public class leetcodeSync {
+
+	private SubmissionDAO submissionDao = SubmissionDAOImp.getInstance();
+	private GitController gitController = GitController.getInstance();
+	
+	
+	
+}

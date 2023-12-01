@@ -1,0 +1,56 @@
+package controller;
+
+import java.io.IOException;
+import java.util.Map;
+
+import org.json.JSONException;
+
+import DAO.SubmissionDAO;
+import DAO.SubmissionDAOImp;
+import model.Submission;
+
+public class leetcodeSyncCommand {
+
+	private static SubmissionDAO submissionDao = SubmissionDAOImp.getInstance();
+	private static GitController gitController = GitController.getInstance();
+	
+	public static boolean checkRepoExist() throws IOException, JSONException {
+		return gitController.repoExist();
+	}
+	
+	public static boolean createRepo() throws IOException, JSONException {
+		return gitController.createRepo();
+	}
+	
+	public static boolean checkFileExist(String path) throws IOException, JSONException {
+		return gitController.fileExistsInRepos(path);
+	}
+		
+	public static void syncLeetCode() {
+		try {
+			submissionDao.initAll();
+			Map<Long, Submission> submissionMap = submissionDao.getSubmissionMap();
+			for (Long id: submissionMap.keySet()) {
+				Submission cur = submissionMap.get(id);
+				String path = cur.getTitle()+"\\"+id+cur.getExt();
+				boolean fileCheck = checkFileExist(path);
+				if (!fileCheck) {
+					// add more meaning ful commit
+					boolean createCheck = gitController.addFiles(path, cur.getCode(), "first commit");
+					if (createCheck) System.out.println("file: " + path+" is created.");
+					else System.out.println("file: " + path+" can not be created.");
+				}
+				{
+					e
+				}
+			}
+			
+		} catch (IOException | JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	
+	
+}
