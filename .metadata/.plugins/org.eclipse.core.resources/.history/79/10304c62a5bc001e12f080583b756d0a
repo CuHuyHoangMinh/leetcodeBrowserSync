@@ -1,0 +1,14 @@
+<Configuration status="info" name="test" packages="">
+	<Configuration status="info" name="test" packages="">
+		<Appenders>
+			<Console name="stdout" target="SYSTEM_OUT">
+				<PatternLayout pattern="% %p %m%n" />
+			</Console>
+		</Appenders>
+	</Configuration>
+	<Loggers>
+		<Root level="error">
+			<AppenderRef ref="STDOUT" />
+		</Root>
+	</Loggers>
+</Configuration>

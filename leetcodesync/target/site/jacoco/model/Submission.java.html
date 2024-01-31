@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Submission.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">leetcodesync</a> &gt; <a href="index.source.html" class="el_package">model</a> &gt; <span class="el_source">Submission.java</span></div><h1>Submission.java</h1><pre class="source lang-java linenums">package model;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+public class Submission {
+	JSONObject json;
+	private Long id;
+	private String lang;
+	private String lang_name;
+	private String time;
+	private int status;
+	private String status_display;
+	private String runtime;
+	private String url;
+	private String is_pending;
+	private String title;
+	private String memory;
+	private String code;
+	private String ext;
+
+	public Submission(Long id, String lang, String lang_name, String time, int status, String status_display,
+			String runtime, String url, String is_pending, String title, String memory, String code) throws JSONException {
+<span class="nc" id="L24">		super();</span>
+<span class="nc" id="L25">		this.id = id;</span>
+<span class="nc" id="L26">		this.lang = lang;</span>
+<span class="nc" id="L27">		this.lang_name = lang_name;</span>
+<span class="nc" id="L28">		this.time = time;</span>
+<span class="nc" id="L29">		this.status = status;</span>
+<span class="nc" id="L30">		this.status_display = status_display;</span>
+<span class="nc" id="L31">		this.runtime = runtime;</span>
+<span class="nc" id="L32">		this.url = url;</span>
+<span class="nc" id="L33">		this.is_pending = is_pending;</span>
+<span class="nc" id="L34">		this.title = title;</span>
+<span class="nc" id="L35">		this.memory = memory;</span>
+<span class="nc" id="L36">		this.code = code;</span>
+<span class="nc" id="L37">		json = new JSONObject();</span>
+<span class="nc" id="L38">		json.put(&quot;id&quot;, id);</span>
+<span class="nc" id="L39">		json.put(&quot;lang&quot;, lang);</span>
+<span class="nc" id="L40">		json.put(&quot;lang_name&quot;, lang_name);</span>
+<span class="nc" id="L41">		json.put(&quot;time&quot;, time);</span>
+<span class="nc" id="L42">		json.put(&quot;status&quot;, status);</span>
+<span class="nc" id="L43">		json.put(&quot;status_display&quot;, status_display);</span>
+<span class="nc" id="L44">		json.put(&quot;runtime&quot;, runtime);</span>
+<span class="nc" id="L45">		json.put(&quot;url&quot;, url);</span>
+<span class="nc" id="L46">		json.put(&quot;is_pending&quot;, is_pending);</span>
+<span class="nc" id="L47">		json.put(&quot;title&quot;, title);</span>
+<span class="nc" id="L48">		json.put(&quot;memory&quot;, memory);</span>
+<span class="nc" id="L49">		json.put(&quot;code&quot;, code);</span>
+
+<span class="nc" id="L51">	}</span>
+
+<span class="nc" id="L53">	public Submission(JSONObject json) throws JSONException {</span>
+<span class="nc" id="L54">		id = json.getLong(&quot;id&quot;);</span>
+<span class="nc" id="L55">		lang = json.getString(&quot;lang&quot;);</span>
+<span class="nc" id="L56">		lang_name = json.getString(&quot;lang_name&quot;);</span>
+<span class="nc" id="L57">		time = json.getString(&quot;time&quot;);</span>
+<span class="nc" id="L58">		status = json.getInt(&quot;status&quot;);</span>
+<span class="nc" id="L59">		status_display = json.getString(&quot;status_display&quot;);</span>
+<span class="nc" id="L60">		runtime = json.getString(&quot;runtime&quot;);</span>
+<span class="nc" id="L61">		url = json.getString(&quot;url&quot;);</span>
+<span class="nc" id="L62">		is_pending = json.getString(&quot;is_pending&quot;);</span>
+<span class="nc" id="L63">		title = json.getString(&quot;title&quot;);</span>
+<span class="nc" id="L64">		memory = json.getString(&quot;memory&quot;);</span>
+<span class="nc" id="L65">		code = json.getString(&quot;code&quot;);</span>
+<span class="nc" id="L66">		this.json = json;</span>
+
+<span class="nc" id="L68">	}</span>
+
+	public Long getId() {
+<span class="nc" id="L71">		return id;</span>
+	}
+
+	public void setId(Long id) {
+<span class="nc" id="L75">		this.id = id;</span>
+<span class="nc" id="L76">	}</span>
+
+	public String getLang() {
+<span class="nc" id="L79">		return lang;</span>
+	}
+
+	public void setLang(String lang) {
+<span class="nc" id="L83">		this.lang = lang;</span>
+<span class="nc" id="L84">	}</span>
+
+	public String getLang_name() {
+<span class="nc" id="L87">		return lang_name;</span>
+	}
+
+	public void setLang_name(String lang_name) {
+<span class="nc" id="L91">		this.lang_name = lang_name;</span>
+<span class="nc" id="L92">	}</span>
+
+	public String getTime() {
+<span class="nc" id="L95">		return time;</span>
+	}
+
+	public void setTime(String time) {
+<span class="nc" id="L99">		this.time = time;</span>
+<span class="nc" id="L100">	}</span>
+
+	public int getStatus() {
+<span class="nc" id="L103">		return status;</span>
+	}
+
+	public void setStatus(int status) {
+<span class="nc" id="L107">		this.status = status;</span>
+<span class="nc" id="L108">	}</span>
+
+	public String getStatus_display() {
+<span class="nc" id="L111">		return status_display;</span>
+	}
+
+	public void setStatus_display(String status_display) {
+<span class="nc" id="L115">		this.status_display = status_display;</span>
+<span class="nc" id="L116">	}</span>
+
+	public String getRuntime() {
+<span class="nc" id="L119">		return runtime;</span>
+	}
+
+	public void setRuntime(String runtime) {
+<span class="nc" id="L123">		this.runtime = runtime;</span>
+<span class="nc" id="L124">	}</span>
+
+	public String getUrl() {
+<span class="nc" id="L127">		return url;</span>
+	}
+
+	public void setUrl(String url) {
+<span class="nc" id="L131">		this.url = url;</span>
+<span class="nc" id="L132">	}</span>
+
+	public String getIs_pending() {
+<span class="nc" id="L135">		return is_pending;</span>
+	}
+
+	public void setIs_pending(String is_pending) {
+<span class="nc" id="L139">		this.is_pending = is_pending;</span>
+<span class="nc" id="L140">	}</span>
+
+	public String getTitle() {
+<span class="nc" id="L143">		return title;</span>
+	}
+
+	public void setTitle(String title) {
+<span class="nc" id="L147">		this.title = title;</span>
+<span class="nc" id="L148">	}</span>
+
+	public String getMemory() {
+<span class="nc" id="L151">		return memory;</span>
+	}
+
+	public void setMemory(String memory) {
+<span class="nc" id="L155">		this.memory = memory;</span>
+<span class="nc" id="L156">	}</span>
+
+	public String getCode() {
+<span class="nc" id="L159">		return code;</span>
+	}
+
+	public void setCode(String code) {
+<span class="nc" id="L163">		this.code = code;</span>
+<span class="nc" id="L164">	}</span>
+
+	@Override
+	public String toString() {
+		try {
+<span class="nc" id="L169">			return json.toString(2);</span>
+<span class="nc" id="L170">		} catch (JSONException e) {</span>
+			// TODO Auto-generated catch block
+<span class="nc" id="L172">			e.printStackTrace();</span>
+		}
+<span class="nc" id="L174">		return &quot;&quot;;</span>
+	}
+	//fill this later
+	public String getExt() {
+<span class="nc bnc" id="L178" title="All 2 branches missed.">		if (lang.equals(&quot;java&quot;))</span>
+<span class="nc" id="L179">			return &quot;.java&quot;;</span>
+<span class="nc bnc" id="L180" title="All 2 branches missed.">		if (lang.equals(&quot;python&quot;))</span>
+<span class="nc" id="L181">			return &quot;.py&quot;;</span>
+<span class="nc bnc" id="L182" title="All 2 branches missed.">		if (lang.equals(&quot;C&quot;))</span>
+<span class="nc" id="L183">			return &quot;.c&quot;;</span>
+<span class="nc" id="L184">		return &quot;&quot;;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.4.201905082037</span></div></body></html>

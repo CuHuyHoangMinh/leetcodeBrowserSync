@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GitController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">leetcodesync</a> &gt; <a href="index.source.html" class="el_package">controller</a> &gt; <span class="el_source">GitController.java</span></div><h1>GitController.java</h1><pre class="source lang-java linenums">package controller;
+
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Base64;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import org.json.*;
+
+import io.github.cdimascio.dotenv.Dotenv;
+import okhttp3.Headers;
+import okhttp3.HttpUrl;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+
+public class GitController {
+
+	private static final String GIT_URL = &quot;api.github.com&quot;;
+	private static final String PROTOCOL = &quot;HTTPS&quot;;
+
+	private static String GIT_TOKEN;
+	private static String GIT_USER;
+	private static String GIT_REPO;
+
+	private static Headers HEADER;
+
+	private OkHttpClient client;
+	private JSONObject output;
+<span class="nc" id="L34">	private List&lt;JSONObject&gt; history = new LinkedList&lt;&gt;();</span>
+
+<span class="nc" id="L36">	private GitController() {</span>
+<span class="nc" id="L37">		client = new OkHttpClient.Builder().readTimeout(1000, TimeUnit.MILLISECONDS)</span>
+<span class="nc" id="L38">				.writeTimeout(1000, TimeUnit.MILLISECONDS).build();</span>
+<span class="nc" id="L39">		Dotenv dotenv = Dotenv.configure() //</span>
+<span class="nc" id="L40">				.directory(&quot;./&quot;) //</span>
+<span class="nc" id="L41">				.ignoreIfMalformed() //</span>
+<span class="nc" id="L42">				.ignoreIfMissing() //</span>
+<span class="nc" id="L43">				.load();</span>
+<span class="nc" id="L44">		GIT_TOKEN = dotenv.get(&quot;gitToken&quot;);</span>
+<span class="nc" id="L45">		GIT_USER = dotenv.get(&quot;gitUser&quot;);</span>
+<span class="nc" id="L46">		GIT_REPO = dotenv.get(&quot;gitRepo&quot;);</span>
+<span class="nc" id="L47">		HEADER = new Headers.Builder().add(&quot;Authorization&quot;, GIT_TOKEN).build();</span>
+
+<span class="nc" id="L49">	}</span>
+
+	private static class singletonHelper {
+<span class="nc" id="L52">		private static final GitController INSTANCE = new GitController();</span>
+	}
+
+	public static GitController getInstance() {
+<span class="nc" id="L56">		return singletonHelper.INSTANCE;</span>
+	}
+
+	// FINAL String make for different api
+//	public Request buildRequest(String type) {
+//
+//		String gitToken = dotenv.get(&quot;gitToken&quot;);
+//		HttpUrl url = new HttpUrl.Builder() //
+//				.scheme(&quot;https&quot;) //
+//				.host(GIT_URL) //
+//				.addPathSegment(&quot;repos&quot;) //
+//				.addPathSegment(dotenv.get(&quot;gitUser&quot;)) //
+//				.addPathSegment(dotenv.get(&quot;gitRepo&quot;)) //
+//				.build();
+//		System.out.println(url.toString());
+//		Request req = new Request.Builder().url(url).header(&quot;Authorization&quot;, dotenv.get(&quot;gitToken&quot;)).build();
+//		return req;
+//	}
+
+	public boolean repoExist() throws IOException, JSONException {
+<span class="nc" id="L76">		HttpUrl url = new HttpUrl.Builder() //</span>
+<span class="nc" id="L77">				.scheme(PROTOCOL) //</span>
+<span class="nc" id="L78">				.host(GIT_URL) //</span>
+<span class="nc" id="L79">				.addPathSegment(&quot;repos&quot;) //</span>
+<span class="nc" id="L80">				.addPathSegment(GIT_USER) //</span>
+<span class="nc" id="L81">				.addPathSegment(GIT_REPO) //</span>
+<span class="nc" id="L82">				.build();</span>
+<span class="nc" id="L83">		Request request = new Request.Builder() //</span>
+<span class="nc" id="L84">				.url(url) //</span>
+<span class="nc" id="L85">				.headers(HEADER) //</span>
+<span class="nc" id="L86">				.build();</span>
+
+<span class="nc" id="L88">		Response response = client.newCall(request).execute();</span>
+//		if (response == null) {
+//			System.out.println(&quot;error connecting to git&quot;);
+//			throws 
+//		}
+<span class="nc" id="L93">		String responseString = response.body().string();</span>
+<span class="nc" id="L94">		output = new JSONObject(responseString);</span>
+<span class="nc" id="L95">		System.out.println(output.toString(2));</span>
+
+<span class="nc" id="L97">		history.add(output);</span>
+<span class="nc bnc" id="L98" title="All 2 branches missed.">		if (output.has(&quot;id&quot;))</span>
+<span class="nc" id="L99">			return true;</span>
+<span class="nc" id="L100">		return false;</span>
+	}
+
+	public boolean createRepo() throws IOException, JSONException {
+<span class="nc" id="L104">		JSONObject jsonRequestBody = new JSONObject();</span>
+<span class="nc" id="L105">		jsonRequestBody.put(&quot;name&quot;, GIT_REPO);</span>
+<span class="nc" id="L106">		jsonRequestBody.put(&quot;description&quot;, &quot;Leetcode Submissions&quot;);</span>
+<span class="nc" id="L107">		jsonRequestBody.put(&quot;homepage&quot;, &quot;https://github.com&quot;);</span>
+
+<span class="nc" id="L109">		HttpUrl url = new HttpUrl.Builder() //</span>
+<span class="nc" id="L110">				.scheme(&quot;https&quot;).host(GIT_URL) //</span>
+<span class="nc" id="L111">				.addPathSegments(&quot;user/repos&quot;) //</span>
+<span class="nc" id="L112">				.build();</span>
+<span class="nc" id="L113">		RequestBody body = RequestBody.create(jsonRequestBody.toString(), MediaType.parse(&quot;application/json&quot;));</span>
+<span class="nc" id="L114">		Request request = new Request.Builder() //</span>
+<span class="nc" id="L115">				.url(url) //</span>
+<span class="nc" id="L116">				.headers(HEADER) //</span>
+<span class="nc" id="L117">				.post(body) //</span>
+<span class="nc" id="L118">				.build();</span>
+<span class="nc" id="L119">		Response response = client.newCall(request).execute();</span>
+<span class="nc" id="L120">		String responseString = response.body().string();</span>
+<span class="nc" id="L121">		output = new JSONObject(responseString);</span>
+<span class="nc" id="L122">		history.add(output);</span>
+<span class="nc" id="L123">		System.out.println(output.toString(2));</span>
+
+		// automaticly add README file or not
+<span class="nc bnc" id="L126" title="All 2 branches missed.">		if (output.has(&quot;id&quot;))</span>
+<span class="nc" id="L127">			return true;</span>
+<span class="nc" id="L128">		return false;</span>
+	}
+
+	public boolean addReadMe() throws IOException, JSONException {
+		// add readme content
+<span class="nc" id="L133">		String readme = &quot;&quot;;</span>
+<span class="nc" id="L134">		return addFiles(&quot;README.md&quot;, readme, &quot;add README.md&quot;);</span>
+	}
+
+	public boolean fileExistsInRepos(String path) throws IOException, JSONException {
+<span class="nc" id="L138">		HttpUrl url = new HttpUrl.Builder() //</span>
+<span class="nc" id="L139">				.scheme(PROTOCOL) //</span>
+<span class="nc" id="L140">				.host(GIT_URL) //</span>
+<span class="nc" id="L141">				.addPathSegment(&quot;repos&quot;) //</span>
+<span class="nc" id="L142">				.addPathSegment(GIT_USER) //</span>
+<span class="nc" id="L143">				.addPathSegment(GIT_REPO) //</span>
+<span class="nc" id="L144">				.addPathSegment(&quot;contents&quot;) //</span>
+<span class="nc" id="L145">				.addPathSegments(path).build();</span>
+<span class="nc" id="L146">		Request request = new Request.Builder() //</span>
+<span class="nc" id="L147">				.url(url) //</span>
+<span class="nc" id="L148">				.headers(HEADER) //</span>
+<span class="nc" id="L149">				.build();</span>
+
+<span class="nc" id="L151">		Response response = client.newCall(request).execute();</span>
+
+<span class="nc" id="L153">		String responseString = response.body().string();</span>
+<span class="nc" id="L154">		output = new JSONObject(responseString);</span>
+<span class="nc" id="L155">		System.out.println(output.toString(2));</span>
+
+<span class="nc" id="L157">		history.add(output);</span>
+<span class="nc bnc" id="L158" title="All 2 branches missed.">		if (output.has(&quot;sha&quot;))</span>
+<span class="nc" id="L159">			return true;</span>
+<span class="nc" id="L160">		return false;</span>
+	}
+//	public boolean addFilesById(String path, String fileId, String fileContent, String commitMessage)throws IOException, JSONException { 
+//		
+//		return false;
+//	}
+
+	public boolean addFiles(String path, String fileContent, String commitMessage) throws IOException, JSONException {
+<span class="nc" id="L168">		HttpUrl url = new HttpUrl.Builder() //</span>
+<span class="nc" id="L169">				.scheme(PROTOCOL) //</span>
+<span class="nc" id="L170">				.host(GIT_URL) //</span>
+<span class="nc" id="L171">				.addPathSegment(&quot;repos&quot;) //</span>
+<span class="nc" id="L172">				.addPathSegment(GIT_USER) //</span>
+<span class="nc" id="L173">				.addPathSegment(GIT_REPO) //</span>
+<span class="nc" id="L174">				.addPathSegment(&quot;contents&quot;) //</span>
+<span class="nc" id="L175">				.addPathSegments(path).build();</span>
+		
+<span class="nc" id="L177">		JSONObject jsonRequestBody = new JSONObject();</span>
+<span class="nc" id="L178">		jsonRequestBody.put(&quot;message&quot;, commitMessage);</span>
+<span class="nc" id="L179">		jsonRequestBody.put(&quot;content&quot;, Base64.getEncoder().encodeToString(fileContent.getBytes()));</span>
+<span class="nc" id="L180">		RequestBody body = RequestBody.create(jsonRequestBody.toString(), MediaType.parse(&quot;application/json&quot;));</span>
+
+<span class="nc" id="L182">		Request request = new Request.Builder() //</span>
+<span class="nc" id="L183">				.url(url) //</span>
+<span class="nc" id="L184">				.headers(HEADER) //</span>
+<span class="nc" id="L185">				.put(body)</span>
+<span class="nc" id="L186">				.build();</span>
+
+<span class="nc" id="L188">		Response response = client.newCall(request).execute();</span>
+
+<span class="nc" id="L190">		String responseString = response.body().string();</span>
+<span class="nc" id="L191">		output = new JSONObject(responseString);</span>
+<span class="nc" id="L192">		System.out.println(output.toString(2));</span>
+
+<span class="nc" id="L194">		history.add(output);</span>
+<span class="nc bnc" id="L195" title="All 2 branches missed.">		if (output.has(&quot;commit&quot;))</span>
+<span class="nc" id="L196">			return true;</span>
+<span class="nc" id="L197">		return false;</span>
+	}
+
+	public JSONObject getOutput() {
+<span class="nc" id="L201">		return output;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.4.201905082037</span></div></body></html>

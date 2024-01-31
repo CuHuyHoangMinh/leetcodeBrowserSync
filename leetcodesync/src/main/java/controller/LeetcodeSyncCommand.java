@@ -3,17 +3,21 @@ package controller;
 import java.io.IOException;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONException;
 
 import DAO.SubmissionDAO;
 import DAO.SubmissionDAOImp;
+import minh.leetcodesync.App;
 import model.Submission;
 
 public class LeetcodeSyncCommand {
 
 	private static SubmissionDAO submissionDao = SubmissionDAOImp.getInstance();
 	private static GitController gitController = GitController.getInstance();
-	
+	private static Logger logger = LogManager.getLogger(App.class);
+
 	public static boolean checkRepoExist() throws IOException, JSONException {
 		return gitController.repoExist();
 	}
@@ -27,6 +31,9 @@ public class LeetcodeSyncCommand {
 	}
 		
 	public static void syncLeetCode() {
+		logger.info("Sync all leetcode success submission");
+//		submissionDao.initAll();
+
 		try {
 			submissionDao.initAll();
 			Map<Long, Submission> submissionMap = submissionDao.getSubmissionMap();

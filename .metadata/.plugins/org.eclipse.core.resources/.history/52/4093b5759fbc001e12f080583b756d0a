@@ -1,0 +1,8 @@
+<Configuration status="debug" name="baeldung" packages="">
+    <Appenders>
+    <File name="fout" fileName="baeldung.log" append="true">
+		            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} %p %m%n"/>
+        </Console>
+            </File>
+    </Appenders>
+</Configuration>

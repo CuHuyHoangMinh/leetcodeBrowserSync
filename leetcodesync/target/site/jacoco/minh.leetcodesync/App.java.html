@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>App.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">leetcodesync</a> &gt; <a href="index.source.html" class="el_package">minh.leetcodesync</a> &gt; <span class="el_source">App.java</span></div><h1>App.java</h1><pre class="source lang-java linenums">package minh.leetcodesync;
+
+import java.io.*;
+import java.net.URISyntaxException;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.json.*;
+//import org.kohsuke.github.GHRepository;
+//import org.kohsuke.github.GitHub;
+//import org.kohsuke.github.GitHubBuilder;
+
+import DAO.SubmissionDAOImp;
+import controller.GitController;
+import controller.LeetcodeSyncCommand;
+import io.github.cdimascio.dotenv.Dotenv;
+
+/**
+ * Hello world!
+ *
+ */
+<span class="nc" id="L30">public class App {</span>
+<span class="nc" id="L31">	private static Logger logger = LogManager.getLogger(App.class);</span>
+
+	public static void main(String[] args) throws IOException, JSONException {
+<span class="nc" id="L34">		logger.error(&quot;app starting&quot;);</span>
+//		LeetcodeSyncCommand.syncLeetCode();
+<span class="nc" id="L36">	}</span>
+
+	public static boolean deleteDir(File f) {
+<span class="nc" id="L39">		File[] allFiles = f.listFiles();</span>
+<span class="nc bnc" id="L40" title="All 2 branches missed.">		if (allFiles != null) {</span>
+<span class="nc bnc" id="L41" title="All 2 branches missed.">			for (File fi : allFiles) {</span>
+<span class="nc" id="L42">				deleteDir(fi);</span>
+			}
+		}
+<span class="nc" id="L45">		return f.delete();</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.4.201905082037</span></div></body></html>

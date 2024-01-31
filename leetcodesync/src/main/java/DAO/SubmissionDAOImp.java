@@ -8,11 +8,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import io.github.cdimascio.dotenv.Dotenv;
+import minh.leetcodesync.App;
 import model.Submission;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
@@ -36,6 +39,8 @@ public class SubmissionDAOImp implements SubmissionDAO {
 
 	private List<Submission> submissions = new ArrayList<>();
 	private Map<Long, Submission> submissionsMap = new HashMap<>();
+	private static Logger logger = LogManager.getLogger(App.class);
+	private static Logger loggerSubmission = LogManager.getLogger("submission_dump");
 
 	private SubmissionDAOImp() {
 		client = new OkHttpClient.Builder().readTimeout(1000, TimeUnit.MILLISECONDS)
@@ -90,6 +95,7 @@ public class SubmissionDAOImp implements SubmissionDAO {
 	}
 
 	public List<Submission> downloadAllSubmission(int status) {
+		logger.info("downloading all submission into memory");
 
 		try {
 			int offset = 0;
@@ -128,11 +134,11 @@ public class SubmissionDAOImp implements SubmissionDAO {
 				offset += 20;
 				lastKey = cur.getString("last_key");
 				TimeUnit.SECONDS.sleep(SLEEP_TIME);
-				System.out.println(cur.toString());
+				loggerSubmission.debug(cur.toString());
 			} while (cur.getBoolean("has_next") && retries < MAX_RETRIES);
-			for (int i = 0; i < 5; i++) {
-				createFile(submissions.get(i));
-			}
+//			for (int i = 0; i < 5; i++) {
+//				createFile(submissions.get(i));
+//			}
 
 			return submissions;
 		} catch (IOException | JSONException ex) {
